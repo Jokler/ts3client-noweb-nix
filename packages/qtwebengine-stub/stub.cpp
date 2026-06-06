@@ -43,6 +43,16 @@ extern "C" {
         new (this_ptr) QObject(parent);
     }
 
+    void _ZN14QWebEnginePageC1EP7QObject(void* this_ptr, QObject* parent) {
+        printf("[Stub] QWebEnginePage C1 (Placement new QObject)\n"); fflush(stdout);
+        new (this_ptr) QObject(parent);
+    }
+
+    void _ZN14QWebEnginePageC2EP7QObject(void* this_ptr, QObject* parent) {
+        printf("[Stub] QWebEnginePage C2 (Placement new QObject)\n"); fflush(stdout);
+        new (this_ptr) QObject(parent);
+    }
+
     // --- Manual Destructors ---
     void _ZN14QWebEngineViewD0Ev(void* this_ptr) {
         printf("[Stub] QWebEngineView D0 (Detaching QWidget from Qt)\n"); fflush(stdout);
@@ -112,23 +122,29 @@ extern "C" {
         return view_pages[this_ptr];
     }
 
+    void* _ZN14QWebEnginePage11qt_metacastEPKc(void* this_ptr, const char* name) {
+        printf("[Stub] QWebEnginePage::qt_metacast(%s)\n", name ? name : "NULL"); fflush(stdout);
+        if (name && strcmp(name, "QWebEnginePage") == 0) return this_ptr;
+        return reinterpret_cast<QObject*>(this_ptr)->qt_metacast(name);
+    }
+
+    int _ZN14QWebEnginePage11qt_metacallEN11QMetaObject4CallEiPPv(void* this_ptr, QMetaObject::Call call, int id, void** arguments) {
+        printf("[Stub] QWebEnginePage::qt_metacall(%d, %d)\n", (int)call, id); fflush(stdout);
+        return reinterpret_cast<QObject*>(this_ptr)->qt_metacall(call, id, arguments);
+    }
+
+    void* _ZN14QWebEngineView11qt_metacastEPKc(void* this_ptr, const char* name) {
+        printf("[Stub] QWebEngineView::qt_metacast(%s)\n", name ? name : "NULL"); fflush(stdout);
+        if (name && strcmp(name, "QWebEngineView") == 0) return this_ptr;
+        return reinterpret_cast<QWidget*>(this_ptr)->qt_metacast(name);
+    }
+
+    int _ZN14QWebEngineView11qt_metacallEN11QMetaObject4CallEiPPv(void* this_ptr, QMetaObject::Call call, int id, void** arguments) {
+        printf("[Stub] QWebEngineView::qt_metacall(%d, %d)\n", (int)call, id); fflush(stdout);
+        return reinterpret_cast<QWidget*>(this_ptr)->qt_metacall(call, id, arguments);
+    }
+
     // --- Auto-Generated Stubs ---
-    void* _ZN14QWebEnginePage11qt_metacastEPKc() {
-        printf("[Stub] Called: _ZN14QWebEnginePage11qt_metacastEPKc\n"); fflush(stdout);
-        return &dummy_object;
-    }
-    void* _ZN14QWebEnginePage11qt_metacallEN11QMetaObject4CallEiPPv() {
-        printf("[Stub] Called: _ZN14QWebEnginePage11qt_metacallEN11QMetaObject4CallEiPPv\n"); fflush(stdout);
-        return &dummy_object;
-    }
-    void* _ZN14QWebEngineView11qt_metacastEPKc() {
-        printf("[Stub] Called: _ZN14QWebEngineView11qt_metacastEPKc\n"); fflush(stdout);
-        return &dummy_object;
-    }
-    void* _ZN14QWebEngineView11qt_metacallEN11QMetaObject4CallEiPPv() {
-        printf("[Stub] Called: _ZN14QWebEngineView11qt_metacallEN11QMetaObject4CallEiPPv\n"); fflush(stdout);
-        return &dummy_object;
-    }
     QMetaObject _ZN14QWebEnginePage16staticMetaObjectE;
     QMetaObject _ZN14QWebEngineView16staticMetaObjectE;
     void* _ZN14QWebEnginePage5eventEP6QEvent() {
@@ -293,10 +309,6 @@ extern "C" {
         printf("[Stub] Called: _ZN14QWebEnginePage13runJavaScriptERK7QStringRK18QWebEngineCallbackIRK8QVariantE\n"); fflush(stdout);
         return &dummy_object;
     }
-    void* _ZN14QWebEnginePageC2EP7QObject() {
-        printf("[Stub] Called: _ZN14QWebEnginePageC2EP7QObject\n"); fflush(stdout);
-        return &dummy_object;
-    }
     void* _ZN14QWebEnginePage12loadFinishedEb() {
         printf("[Stub] Called: _ZN14QWebEnginePage12loadFinishedEb\n"); fflush(stdout);
         return &dummy_object;
@@ -313,6 +325,8 @@ extern "C" {
     // Copy a real QMetaObject into our dummy meta objects on library load
     __attribute__((constructor)) void init_meta_objects() {
         memcpy(&_ZN14QWebEnginePage16staticMetaObjectE, &QObject::staticMetaObject, sizeof(QMetaObject));
-        memcpy(&_ZN14QWebEngineView16staticMetaObjectE, &QObject::staticMetaObject, sizeof(QMetaObject));
+        *(const QMetaObject**)&_ZN14QWebEnginePage16staticMetaObjectE = &QObject::staticMetaObject;
+        memcpy(&_ZN14QWebEngineView16staticMetaObjectE, &QWidget::staticMetaObject, sizeof(QMetaObject));
+        *(const QMetaObject**)&_ZN14QWebEngineView16staticMetaObjectE = &QWidget::staticMetaObject;
     }
 }

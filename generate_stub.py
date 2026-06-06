@@ -1,7 +1,19 @@
 import subprocess
+import sys
+import os
+import glob
 
-# TODO: take as argument
-TS3_BIN = "/nix/store/1n1fg3v4irnfd8ry2bb72cd819fa7fcy-teamspeak3-3.6.2/opt/teamspeak/ts3client"
+# Try to find the teamspeak3 binary dynamically or fallback
+TS3_BIN = "./result/opt/teamspeak/ts3client"
+if len(sys.argv) > 1:
+    TS3_BIN = sys.argv[1]
+elif not os.path.exists(TS3_BIN):
+    paths = glob.glob("/nix/store/*-teamspeak3-*/opt/teamspeak/ts3client")
+    if paths:
+        TS3_BIN = paths[0]
+        print(f"Auto-detected Teamspeak binary: {TS3_BIN}")
+    else:
+        print(f"Warning: Teamspeak binary not found at {TS3_BIN} or in /nix/store. Make sure to pass it as an argument.")
 
 def generate():
     print("Reading ELF symbols...")
@@ -14,6 +26,8 @@ def generate():
         "_ZN17QWebEngineProfileC2ERK7QStringP7QObject": ("QWebEngineProfile C2", "QObject", "void* arg1, QObject* parent"),
         "_ZN14QWebEnginePageC1EP17QWebEngineProfileP7QObject": ("QWebEnginePage C1", "QObject", "void* arg1, QObject* parent"),
         "_ZN14QWebEnginePageC2EP17QWebEngineProfileP7QObject": ("QWebEnginePage C2", "QObject", "void* arg1, QObject* parent"),
+        "_ZN14QWebEnginePageC1EP7QObject": ("QWebEnginePage C1", "QObject", "QObject* parent"),
+        "_ZN14QWebEnginePageC2EP7QObject": ("QWebEnginePage C2", "QObject", "QObject* parent"),
     }
 
     manual_destructors = {
@@ -35,7 +49,11 @@ def generate():
 
     stateful_skips = [
         "_ZNK14QWebEngineView4pageEv",
-        "_ZN14QWebEngineView7setPageEP14QWebEnginePage"
+        "_ZN14QWebEngineView7setPageEP14QWebEnginePage",
+        "_ZN14QWebEnginePage11qt_metacastEPKc",
+        "_ZN14QWebEnginePage11qt_metacallEN11QMetaObject4CallEiPPv",
+        "_ZN14QWebEngineView11qt_metacastEPKc",
+        "_ZN14QWebEngineView11qt_metacallEN11QMetaObject4CallEiPPv",
     ]
 
     meta_objects = []
@@ -88,6 +106,28 @@ def generate():
         f.write("        return view_pages[this_ptr];\n")
         f.write("    }\n\n")
 
+        f.write("    void* _ZN14QWebEnginePage11qt_metacastEPKc(void* this_ptr, const char* name) {\n")
+        f.write("        printf(\"[Stub] QWebEnginePage::qt_metacast(%s)\\n\", name ? name : \"NULL\"); fflush(stdout);\n")
+        f.write("        if (name && strcmp(name, \"QWebEnginePage\") == 0) return this_ptr;\n")
+        f.write("        return reinterpret_cast<QObject*>(this_ptr)->qt_metacast(name);\n")
+        f.write("    }\n\n")
+
+        f.write("    int _ZN14QWebEnginePage11qt_metacallEN11QMetaObject4CallEiPPv(void* this_ptr, QMetaObject::Call call, int id, void** arguments) {\n")
+        f.write("        printf(\"[Stub] QWebEnginePage::qt_metacall(%d, %d)\\n\", (int)call, id); fflush(stdout);\n")
+        f.write("        return reinterpret_cast<QObject*>(this_ptr)->qt_metacall(call, id, arguments);\n")
+        f.write("    }\n\n")
+
+        f.write("    void* _ZN14QWebEngineView11qt_metacastEPKc(void* this_ptr, const char* name) {\n")
+        f.write("        printf(\"[Stub] QWebEngineView::qt_metacast(%s)\\n\", name ? name : \"NULL\"); fflush(stdout);\n")
+        f.write("        if (name && strcmp(name, \"QWebEngineView\") == 0) return this_ptr;\n")
+        f.write("        return reinterpret_cast<QWidget*>(this_ptr)->qt_metacast(name);\n")
+        f.write("    }\n\n")
+
+        f.write("    int _ZN14QWebEngineView11qt_metacallEN11QMetaObject4CallEiPPv(void* this_ptr, QMetaObject::Call call, int id, void** arguments) {\n")
+        f.write("        printf(\"[Stub] QWebEngineView::qt_metacall(%d, %d)\\n\", (int)call, id); fflush(stdout);\n")
+        f.write("        return reinterpret_cast<QWidget*>(this_ptr)->qt_metacall(call, id, arguments);\n")
+        f.write("    }\n\n")
+
         f.write("    // --- Auto-Generated Stubs ---\n")
         for line in result.stdout.splitlines():
             if "UND" in line and "WebEngine" in line:
@@ -123,7 +163,14 @@ def generate():
         f.write("\n    // Copy a real QMetaObject into our dummy meta objects on library load\n")
         f.write("    __attribute__((constructor)) void init_meta_objects() {\n")
         for mo in meta_objects:
-            f.write(f"        memcpy(&{mo}, &QObject::staticMetaObject, sizeof(QMetaObject));\n")
+            if "QWebEngineView" in mo:
+                f.write(f"        memcpy(&{mo}, &QWidget::staticMetaObject, sizeof(QMetaObject));\n")
+                f.write(f"        *(const QMetaObject**)&{mo} = &QWidget::staticMetaObject;\n")
+            elif "QWebEnginePage" in mo:
+                f.write(f"        memcpy(&{mo}, &QObject::staticMetaObject, sizeof(QMetaObject));\n")
+                f.write(f"        *(const QMetaObject**)&{mo} = &QObject::staticMetaObject;\n")
+            else:
+                f.write(f"        memcpy(&{mo}, &QObject::staticMetaObject, sizeof(QMetaObject));\n")
         f.write("    }\n")
 
         f.write("}\n")

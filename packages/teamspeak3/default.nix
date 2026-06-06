@@ -16,6 +16,8 @@
   qtwebengine-stub,
   alsa-lib,
   pulseaudio,
+  libxi,
+  libx11,
 }: let
   pluginsdk = fetchzip {
     url = "https://files.teamspeak-services.com/releases/sdk/3.3.1/ts_sdk_3.3.1.zip";
@@ -46,6 +48,8 @@ in
         glib
         libcxx
         qtwebengine-stub
+        libxi
+        libx11
       ]
       ++ (with qt5; [
         qtbase
@@ -127,7 +131,7 @@ in
 
     postFixup = ''
       wrapProgram $out/bin/ts3client \
-        --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [pulseaudio alsa-lib]}"
+        --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [pulseaudio alsa-lib libxi libx11]}"
     '';
 
     meta = {
