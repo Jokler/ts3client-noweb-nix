@@ -1,6 +1,7 @@
 # taken from nixos-25.11
 {
   lib,
+  callPackage,
   stdenv,
   fetchurl,
   fetchzip,
@@ -18,7 +19,9 @@
   pulseaudio,
   libxi,
   libx11,
+  fixScreenOffDpi ? true,
 }: let
+  dpiWorkaround = callPackage ./dpi-workaround {inherit qt5;};
   pluginsdk = fetchzip {
     url = "https://files.teamspeak-services.com/releases/sdk/3.3.1/ts_sdk_3.3.1.zip";
     hash = "sha256-wx4pBZHpFPoNvEe4xYE80KnXGVda9XcX35ho4R8QxrQ=";
@@ -109,10 +112,16 @@ in
       })
     ];
 
-    qtWrapperArgs = [
-      # wayland is currently broken, remove when TS3 fixes that
-      "--set QT_QPA_PLATFORM xcb"
-    ];
+    qtWrapperArgs =
+      [
+        # wayland is currently broken, remove when TS3 fixes that
+        "--set QT_QPA_PLATFORM xcb"
+      ]
+      ++ lib.optionals fixScreenOffDpi [
+        # Keep style metrics valid when XWayland removes the last output and
+        # Qt5 reports NaN logical DPI. Set AA_Use96Dpi before GUI initialization.
+        "--prefix LD_PRELOAD : ${dpiWorkaround}/lib/libts3-dpi.so"
+      ];
 
     installPhase = ''
       runHook preInstall

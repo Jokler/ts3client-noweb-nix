@@ -41,6 +41,28 @@ an outdated chromium version with numerous CVEs.
 }
 ```
 
+## Screen-off rendering workaround
+
+On some Wayland desktops, powering off the last display temporarily removes its
+XWayland output. Qt5 can then report NaN logical DPI, causing icons and tree
+indentation to disappear even after the display reconnects.
+
+The client enables Qt's `AA_Use96Dpi` application attribute before GUI
+initialization through a small preload library. Qt's style code checks this
+attribute before consulting potentially invalid font DPI. Unlike `QT_FONT_DPI`,
+it also covers style metrics such as icon sizes and tree indentation. This
+works around the rendering failure; it does not repair Qt's XCB screen state.
+
+The workaround is enabled by default. Fixed 96-DPI layout can change UI sizing
+on high-DPI displays. To disable it:
+
+```nix
+pkgs.teamspeak3.override { fixScreenOffDpi = false; }
+```
+
+The preload library has an offscreen regression test covering invalid font DPI,
+icon size, tree indentation, and selected-icon generation.
+
 ## Disclaimer
 
 As my knowledge of C++ and Qt is very limited the stub was created with heavy
